@@ -14,7 +14,7 @@
 ---
 
 > **Checkpoint 4 — Engenharia de Software (2º Semestre)**  
-> Aplicação orientada a objetos para reconhecimento de comandos de voz, síntese neural, gerenciamento de agenda, captura de tela e inteligência artificial generativa.
+> Aplicação orientada a objetos para reconhecimento de comandos de voz, síntese neural, gerenciamento de agenda, captura de tela, controle de sistema e inteligência artificial generativa.
 
 ---
 
@@ -66,10 +66,15 @@ O assistente só responde quando acionado pela palavra de ativação: **"Bruxo"*
 | 5 | **"Bruxo, limpar agenda"** | Esvazia o conteúdo do arquivo `agenda.txt` sem deletá-lo. | Item 8 |
 | 6 | **"Bruxo, tirar um print da tela"** | Captura a tela e salva automaticamente com timestamp na pasta `img/`. | Item 10 (Extra) |
 | 7 | **"Bruxo, limpar fotos"** | Apaga todas as imagens salvas na pasta `img/`. | Item 10 (Extra) |
-| 8 | **"Bruxo, Alanzoka"** | Responde *"Nextage, bebê!"* (Easter Egg). | Item 10 (Extra) |
-| 9 | **"Bruxo, [qualquer dúvida/pergunta]"** | Consulta a IA Generativa (Groq Cloud) e responde por voz em < 1s. | Item 9 |
-| 10 | **"Bruxo, listar comandos"** | Exibe a lista formatada no terminal e resume as opções por voz. | Usabilidade |
-| 11 | **"Bruxo, tchau"** (ou *"desligar"*) | Responde *"Bruxo saindo... KABUUUM!"* e encerra a aplicação. | Usabilidade |
+| 8 | **"Bruxo, qual a temperatura?"** | Consulta a API OpenWeatherMap da cidade informada. | Item 10 (Extra) |
+| 9 | **"Bruxo, cotação do dólar"** | Consulta a AwesomeAPI e informa o valor atual do dólar. | Item 10 (Extra) |
+| 10 | **"Bruxo, aumentar/mutar volume"** | Controla o volume geral do Windows simulando teclas. | Item 10 (Extra) |
+| 11 | **"Bruxo, pesquisar no google"** | Faz busca no Google após IA validar se o termo é seguro/SFW. | Item 10 (Extra) |
+| 12 | **"Bruxo, pesquisar vídeo"** | Pergunta o nome e pesquisa vídeos diretamente no YouTube. | Item 10 (Extra) |
+| 13 | **"Bruxo, abrir portal da faculdade"**| Abre diretamente o site da FIAP no navegador. | Item 10 (Extra) |
+| 14 | **"Bruxo, Alanzoka"** | Responde *"Nextage, bebê!"* (Easter Egg). | Item 10 (Extra) |
+| 15 | **"Bruxo, [qualquer dúvida]"** | Consulta a IA Generativa (Groq Cloud) e responde por voz em < 1s. | Item 9 |
+| 16 | **"Bruxo, tchau"** (ou *"desliga"*) | Responde *"Bruxo saindo... KABUUUM!"* e encerra a aplicação. | Usabilidade |
 
 ---
 
@@ -80,7 +85,8 @@ O assistente só responde quando acionado pela palavra de ativação: **"Bruxo"*
 * **Síntese de Voz (TTS):** `edge-tts` (Microsoft Neural Voice `pt-BR-AntonioNeural` com tom grave ajustado) + `gTTS` (fallback)
 * **Reprodução de Áudio:** `pygame` (execução 100% em memória RAM via `io.BytesIO` sem bloqueio de arquivos)
 * **Inteligência Artificial Generativa:** `groq` (Groq Cloud LPU API)
-* **Captura de Tela:** `pyautogui` + `Pillow`
+* **Requisições de APIs Externas:** `requests` (OpenWeatherMap, AwesomeAPI)
+* **Captura de Tela e Controle de Sistema:** `pyautogui` + `Pillow`
 * **Gerenciamento de Ambiente:** `python-dotenv`
 
 ---
@@ -89,8 +95,8 @@ O assistente só responde quando acionado pela palavra de ativação: **"Bruxo"*
 
 ### 1. Clonar o repositório
 ```bash
-git clone https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git
-cd assistente
+git clone https://github.com/wesley-souza8/bruxo.git
+cd bruxo
 ```
 
 ### 2. Criar e ativar um ambiente virtual (Opcional, mas recomendado)
@@ -109,10 +115,12 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Configurar a Chave da API (Groq Cloud)
-Crie um arquivo `.env` na raiz do projeto e adicione sua chave da Groq:
+### 4. Configurar as Chaves de API
+Crie um arquivo `.env` na raiz do projeto e adicione suas chaves:
 ```env
-GROQ_API_KEY=gsk_sua_chave_aqui
+GROQ_API_KEY=sua_chave_groq_aqui
+OPENWEATHER_API_KEY=sua_chave_openweathermap_aqui
+AWESOME_API_KEY=sua_chave_awesomeapi_aqui
 ```
 
 ---

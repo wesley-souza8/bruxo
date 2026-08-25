@@ -18,7 +18,9 @@ VOZ_NEURAL = "pt-BR-AntonioNeural"
 PITCH_GRAVE = "-12Hz"
 VELOCIDADE_FALA = "+0%"
 
-# Configurações de IA (Groq Cloud)
+# Configurações de IA e APIs
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 MODELO_GROQ_PRINCIPAL = "openai/gpt-oss-120b"
 MODELO_GROQ_FALLBACK = "qwen/qwen3.6-27b"
+OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
+AWESOME_API_KEY = os.getenv("AWESOME_API_KEY")
