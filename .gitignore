@@ -1,0 +1,12 @@
+# Ambiente e chaves de API
+.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+
+# Arquivos de audio temporarios
+*.mp3
+
+# Imagens capturadas (opcional)
