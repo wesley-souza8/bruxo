@@ -1,11 +1,11 @@
-# 🧙‍♂️ Assistente Virtual Bruxo (Projeto F.R.I.D.A.Y.)
+# 🧙‍♂️ Assistente Virtual Bruxo
 
 [![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Groq AI](https://img.shields.io/badge/AI-Groq%20Cloud%20LPU-orange.svg)](https://groq.com/)
 [![Edge-TTS](https://img.shields.io/badge/TTS-Microsoft%20Neural-purple.svg)](https://github.com/rany2/edge-tts)
 
-## 👥 Integrantes do Grupo (CP4 - 4ESR)
+## 👥 Integrantes do Grupo
 
 * Deivison Pertel – RM 550803
 * Eduardo Akira Murata – RM 98713
@@ -13,7 +13,10 @@
 
 ---
 
-> **Checkpoint 4 — Engenharia de Software (2º Semestre)**  
+> **Turma:** 4ESR  
+> **Matéria:** Project-Based Maker Lab  
+> **Professor:** Hellynson Cassio Lana  
+>   
 > Aplicação orientada a objetos para reconhecimento de comandos de voz, síntese neural, gerenciamento de agenda, captura de tela, controle de sistema e inteligência artificial generativa.
 
 ---
@@ -57,24 +60,24 @@ assistente/
 
 O assistente só responde quando acionado pela palavra de ativação: **"Bruxo"** (ou variações como *"O Bruxo"* / *"Bruxão"*). Frases ditas sem a palavra de ativação são apenas exibidas no terminal para monitoramento, sem executar ações.
 
-| # | Comando Falado | Ação Executada | Critério de Avaliação |
-|---|---|---|---|
-| 1 | **"Bruxo, que horas são?"** | Informa as horas e minutos atuais por voz. | Item 4 |
-| 2 | **"Bruxo, que dia é hoje?"** | Informa o dia, mês e ano atuais por voz. | Item 5 |
-| 3 | **"Bruxo, cadastrar evento na agenda"** | Pergunta o evento, transcreve a resposta e salva em `agenda.txt`. | Item 2 |
-| 4 | **"Bruxo, ler agenda"** | Lê todos os eventos salvos no arquivo `agenda.txt`. | Item 3 |
-| 5 | **"Bruxo, limpar agenda"** | Esvazia o conteúdo do arquivo `agenda.txt` sem deletá-lo. | Item 8 |
-| 6 | **"Bruxo, tirar um print da tela"** | Captura a tela e salva automaticamente com timestamp na pasta `img/`. | Item 10 (Extra) |
-| 7 | **"Bruxo, limpar fotos"** | Apaga todas as imagens salvas na pasta `img/`. | Item 10 (Extra) |
-| 8 | **"Bruxo, qual a temperatura?"** | Consulta a API OpenWeatherMap da cidade informada. | Item 10 (Extra) |
-| 9 | **"Bruxo, cotação do dólar"** | Consulta a AwesomeAPI e informa o valor atual do dólar. | Item 10 (Extra) |
-| 10 | **"Bruxo, aumentar/mutar volume"** | Controla o volume geral do Windows simulando teclas. | Item 10 (Extra) |
-| 11 | **"Bruxo, pesquisar no google"** | Faz busca no Google após IA validar se o termo é seguro/SFW. | Item 10 (Extra) |
-| 12 | **"Bruxo, pesquisar vídeo"** | Pergunta o nome e pesquisa vídeos diretamente no YouTube. | Item 10 (Extra) |
-| 13 | **"Bruxo, abrir portal da faculdade"**| Abre diretamente o site da FIAP no navegador. | Item 10 (Extra) |
-| 14 | **"Bruxo, Alanzoka"** | Responde *"Nextage, bebê!"* (Easter Egg). | Item 10 (Extra) |
-| 15 | **"Bruxo, [qualquer dúvida]"** | Consulta a IA Generativa (Groq Cloud) e responde por voz em < 1s. | Item 9 |
-| 16 | **"Bruxo, tchau"** (ou *"desliga"*) | Responde *"Bruxo saindo... KABUUUM!"* e encerra a aplicação. | Usabilidade |
+| # | Comando Falado | Ação Executada |
+|---|---|---|
+| 1 | **"Bruxo, que horas são?"** | Informa as horas e minutos atuais por voz. |
+| 2 | **"Bruxo, que dia é hoje?"** | Informa o dia, mês e ano atuais por voz. |
+| 3 | **"Bruxo, cadastrar evento na agenda"** | Pergunta o evento, transcreve a resposta e salva em `agenda.txt`. |
+| 4 | **"Bruxo, ler agenda"** | Lê todos os eventos salvos no arquivo `agenda.txt`. |
+| 5 | **"Bruxo, limpar agenda"** | Esvazia o conteúdo do arquivo `agenda.txt` sem deletá-lo. |
+| 6 | **"Bruxo, tirar um print da tela"** | Captura a tela e salva automaticamente com timestamp na pasta `img/`. |
+| 7 | **"Bruxo, limpar fotos"** | Apaga todas as imagens salvas na pasta `img/`. |
+| 8 | **"Bruxo, qual a temperatura?"** | Consulta a API OpenWeatherMap da cidade informada. |
+| 9 | **"Bruxo, cotação do dólar"** | Consulta a AwesomeAPI e informa o valor atual do dólar. |
+| 10 | **"Bruxo, aumentar/mutar volume"** | Controla o volume geral do Windows simulando teclas. |
+| 11 | **"Bruxo, pesquisar no google"** | Faz busca no Google após IA validar se o termo é seguro/SFW. |
+| 12 | **"Bruxo, pesquisar vídeo"** | Pergunta o nome e pesquisa vídeos diretamente no YouTube. |
+| 13 | **"Bruxo, abrir portal da faculdade"**| Abre diretamente o site da FIAP no navegador. |
+| 14 | **"Bruxo, Alanzoka"** | Responde *"Nextage, bebê!"* (Easter Egg). |
+| 15 | **"Bruxo, [qualquer dúvida]"** | Consulta a IA Generativa (Groq Cloud) e responde por voz em < 1s. |
+| 16 | **"Bruxo, tchau"** (ou *"desliga"*) | Responde *"Bruxo saindo... KABUUUM!"* e encerra a aplicação. |
 
 ---
 

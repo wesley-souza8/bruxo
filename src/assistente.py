@@ -15,7 +15,7 @@ from src.voz import SintetizadorVoz
 
 class AssistenteBruxo:
     """
-    Classe orquestradora da Assistente Virtual Bruxo (Projeto F.R.I.D.A.Y. - CP4)
+    Classe orquestradora da Assistente Virtual Bruxo.
     
     Responsabilidades:
     - Integrar módulos de voz, microfone, agenda, captura e inteligência artificial.
@@ -337,7 +337,7 @@ class AssistenteBruxo:
         with sr.Microphone() as fonte:
             separador = "=" * 60
             print(separador)
-            print("[INICIO] PROJETO F.R.I.D.A.Y. - ASSISTENTE VIRTUAL BRUXO")
+            print("[INICIO] ASSISTENTE VIRTUAL BRUXO")
             print(separador)
             print("[CALIBRANDO] Ajustando ruído ambiente do microfone... Aguarde 1s.")
             self.microfone.calibrar(fonte, duracao=1)
