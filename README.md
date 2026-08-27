@@ -134,6 +134,7 @@ Crie um arquivo `.env` na raiz do projeto e adicione suas chaves (use as APIs em
 ```env
 GROQ_API_KEY=sua_chave_groq_aqui
 OPENWEATHER_API_KEY=sua_chave_openweathermap_aqui
+AWESOME_API_KEY=sua_chave_awesomeapi_aqui
 ```
 
 ---
