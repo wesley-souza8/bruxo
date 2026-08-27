@@ -10,3 +10,7 @@ edge-tts>=7.0.0
 requests>=2.31.0
 pycaw>=20230407
 comtypes>=1.2.0
+opencv-python
+opencv-contrib-python
+numpy
+easyocr

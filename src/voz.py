@@ -71,15 +71,25 @@ class SintetizadorVoz:
         - aguardar=False: Executa em segundo plano sem travar o microfone.
         - aguardar=True: Espera o término da reprodução.
         """
-        print(f"[{prefixo}]: \"{texto}\"")
+        texto_limpo = texto.strip()
+        # Tratamento para evitar quebra do console com caracteres não reconhecidos (ex: hifens especiais)
+        try:
+            print(f"[{prefixo}]: \"{texto_limpo}\"")
+        except UnicodeEncodeError:
+            texto_ascii = texto_limpo.encode('ascii', 'replace').decode('ascii')
+            print(f"[{prefixo}]: \"{texto_ascii}\"")
+            
+        if not texto_limpo:
+            return
+
         self.parar()
 
         if aguardar:
-            self._tocar_audio(texto)
+            self._tocar_audio(texto_limpo)
         else:
             self.thread_fala = threading.Thread(
                 target=self._tocar_audio,
-                args=(texto,),
+                args=(texto_limpo,),
                 daemon=True
             )
             self.thread_fala.start()

@@ -1,17 +1,16 @@
 import datetime
 import time
 import webbrowser
-import urllib.parse
-import requests
-import pyautogui
 import speech_recognition as sr
 from src.agenda import GerenciadorAgenda
 from src.captura import GerenciadorCaptura
-from src.config import NOME_ASSISTENTE, OPENWEATHER_API_KEY
+from src.config import NOME_ASSISTENTE
 from src.ia_groq import ClienteIA
 from src.microfone import OuvinteMicrofone
 from src.voz import SintetizadorVoz
-
+from src.reconhecimento import GerenciadorFacial
+from src.leitura import LeitorTexto
+from src.servicos import ServicosWeb, ControleSistema
 
 class AssistenteBruxo:
     """
@@ -30,6 +29,10 @@ class AssistenteBruxo:
         self.agenda = GerenciadorAgenda()
         self.captura = GerenciadorCaptura()
         self.ia = ClienteIA()
+        self.facial = GerenciadorFacial()
+        self.leitor_texto = LeitorTexto()
+        self.web = ServicosWeb()
+        self.sistema = ControleSistema()
 
     # ==========================================
     # CONSULTAS BÁSICAS (Horas e Data)
@@ -111,109 +114,71 @@ class AssistenteBruxo:
             self.voz.falar("Houve um erro ao limpar as imagens.")
 
     # ==========================================
-    # YOUTUBE E GOOGLE (NAVEGADOR)
+    # RECONHECIMENTO FACIAL
     # ==========================================
-
-    def buscar_video_youtube(self, fonte):
-        self.voz.falar("Qual vídeo você deseja ver?", aguardar=True)
-        print("[AGUARDANDO NOME DO VÍDEO...]")
-        video = self.microfone.escutar(fonte, timeout=7, phrase_time_limit=10)
-        if not video:
-            self.voz.falar("Não consegui ouvir o nome do vídeo. Busca cancelada.")
-            return
-        print(f"[VÍDEO TRANSCRITO]: \"{video}\"")
-        self.voz.falar(f"Abrindo o YouTube para pesquisar por: {video}")
-        query = urllib.parse.quote(video)
-        webbrowser.open(f"https://www.youtube.com/results?search_query={query}")
-
-    def buscar_google(self, fonte):
-        self.voz.falar("O que você deseja pesquisar no Google?", aguardar=True)
-        print("[AGUARDANDO TERMO DE BUSCA...]")
-        termo = self.microfone.escutar(fonte, timeout=7, phrase_time_limit=10)
-        if not termo:
-            self.voz.falar("Não escutei nada. Pesquisa cancelada.")
+    def cadastrar_facial(self, fonte):
+        self.voz.falar("Qual é o nome da pessoa que será cadastrada?", aguardar=True)
+        print("[AGUARDANDO NOME PARA CADASTRO FACIAL...]")
+        
+        nome = self.microfone.escutar(fonte, timeout=5, phrase_time_limit=5)
+        if not nome:
+            self.voz.falar("Não escutei o nome. Cadastro cancelado.")
             return
             
-        print(f"[TERMO TRANSCRITO]: \"{termo}\"")
-        self.voz.falar("Verificando a segurança da sua pesquisa, um instante...")
+        nome_limpo = nome.strip()
+        self.voz.falar(f"Certo. Vou abrir a câmera agora. Por favor, {nome_limpo}, olhe para a lente.", aguardar=True)
         
-        # Faz a validação chamando a IA
-        prompt = f"Avalie a segurança do termo de pesquisa: '{termo}'. Se contiver pornografia, violência explícita, apologia a crimes ou conteúdo ilegal, responda APENAS 'BLOQUEAR'. Caso seja seguro, responda APENAS 'PERMITIR'."
-        resposta_seguranca = self.ia.perguntar(prompt).strip().upper()
-        
-        # Se a IA se recusar a responder (filtro próprio dela) ou responder BLOQUEAR, nós bloqueamos.
-        if "PERMITIR" not in resposta_seguranca or "BLOQUEAR" in resposta_seguranca:
-            self.voz.falar("Desculpe, não posso pesquisar isso. O termo viola as políticas de segurança.")
+        sucesso = self.facial.capturar_rosto(nome_limpo)
+        if sucesso:
+            self.voz.falar(f"Pronto! O rosto de {nome_limpo} foi cadastrado com sucesso no sistema.")
         else:
-            self.voz.falar("Tudo certo, abrindo o Google.")
-            query = urllib.parse.quote(termo)
-            webbrowser.open(f"https://www.google.com/search?q={query}")
+            self.voz.falar("Desculpe, ocorreu um erro ao acessar a câmera ou não consegui identificar o rosto.")
 
-    def abrir_portal_fiap(self):
-        self.voz.falar("Abrindo o portal da faculdade FIAP.")
-        webbrowser.open("https://on.fiap.com.br/")
+    def identificar_usuario(self):
+        self.voz.falar("Deixe-me dar uma olhada. Olhe para a câmera.", aguardar=True)
+        nome = self.facial.reconhecer_rosto()
+        
+        if nome:
+            self.voz.falar(f"Você é o {nome}! Como posso ajudar?")
+        else:
+            self.voz.falar("Não consegui reconhecer seu rosto. Talvez você precise se cadastrar primeiro.")
 
-    # ==========================================
-    # CLIMA E COTAÇÃO (APIS)
-    # ==========================================
-
-    def obter_clima(self, fonte):
-        self.voz.falar("De qual cidade você quer saber a temperatura?", aguardar=True)
-        print("[AGUARDANDO NOME DA CIDADE...]")
-        cidade = self.microfone.escutar(fonte, timeout=5, phrase_time_limit=7)
-        if not cidade:
-            self.voz.falar("Não entendi a cidade. Busca de clima cancelada.")
-            return
-
-        print(f"[CIDADE TRANSCRITA]: \"{cidade}\"")
-        if not OPENWEATHER_API_KEY:
-            self.voz.falar("A chave da API de clima não está configurada no sistema.")
+    def remover_cadastro_facial(self, fonte):
+        self.voz.falar("Você deseja apagar todos os cadastros ou de uma pessoa específica?", aguardar=True)
+        print("[AGUARDANDO: TODOS OU ESPECÍFICO...]")
+        resposta = self.microfone.escutar(fonte, timeout=5, phrase_time_limit=5)
+        
+        if not resposta:
+            self.voz.falar("Não escutei sua resposta. Operação cancelada.")
             return
             
-        try:
-            url = f"http://api.openweathermap.org/data/2.5/weather?q={cidade}&appid={OPENWEATHER_API_KEY}&units=metric&lang=pt_br"
-            res = requests.get(url).json()
-            if res.get("cod") != 200:
-                self.voz.falar("Não consegui encontrar os dados de temperatura para essa cidade.")
+        resposta = resposta.lower()
+        if any(t in resposta for t in ["todos", "geral", "todo mundo", "tudo", "ambos", "gerais"]):
+            sucesso, msg = self.facial.apagar_cadastro(None)
+            self.voz.falar(msg)
+        elif any(t in resposta for t in ["específico", "uma pessoa", "alguém", "especifica", "específica", "um"]):
+            self.voz.falar("Qual é o nome da pessoa que devo remover do sistema?", aguardar=True)
+            print("[AGUARDANDO NOME PARA REMOVER...]")
+            nome = self.microfone.escutar(fonte, timeout=5, phrase_time_limit=5)
+            if not nome:
+                self.voz.falar("Não escutei o nome. Cancelando.")
                 return
-            temp = round(res["main"]["temp"])
-            desc = res["weather"][0]["description"]
-            self.voz.falar(f"A temperatura atual em {cidade} é de {temp} graus, com {desc}.")
-        except Exception as e:
-            print(f"[ERRO CLIMA]: {e}")
-            self.voz.falar("Houve um erro ao consultar o servidor de clima.")
-
-    def obter_cotacao_dolar(self):
-        try:
-            url = "https://economia.awesomeapi.com.br/json/last/USD-BRL"
-            res = requests.get(url).json()
-            valor = float(res["USDBRL"]["bid"])
-            valor_formatado = f"{valor:.2f}".replace(".", ",")
-            self.voz.falar(f"A cotação atual do dólar é de {valor_formatado} reais.")
-        except Exception as e:
-            print(f"[ERRO COTAÇÃO]: {e}")
-            self.voz.falar("Não consegui acessar a cotação do dólar no momento.")
-
-    # ==========================================
-    # CONTROLE DE SISTEMA (VOLUME)
-    # ==========================================
-
-    def controlar_volume(self, comando: str):
-        if any(t in comando for t in ["aumentar", "aumente", "sobe", "subir", "mais alto"]):
-            pyautogui.press('volumeup', presses=5) # ~10% de aumento (cada press é 2%)
-            self.voz.falar("Aumentando o volume em 10%.")
-        elif any(t in comando for t in ["diminuir", "diminua", "abaixa", "abaixar", "mais baixo"]):
-            pyautogui.press('volumedown', presses=5) # ~10% de redução
-            self.voz.falar("Diminuindo o volume em 10%.")
-        elif any(t in comando for t in ["mutar", "mudo", "silenciar"]):
-            pyautogui.press('volumemute')
-            self.voz.falar("Volume mutado.")
-        elif any(t in comando for t in ["desmutar", "voltar som", "tirar mudo"]):
-            pyautogui.press('volumemute')
-            self.voz.falar("Som restaurado.")
+            sucesso, msg = self.facial.apagar_cadastro(nome)
+            self.voz.falar(msg)
         else:
-            self.voz.falar("Não entendi se devo aumentar, diminuir ou mutar o volume.")
+            self.voz.falar("Opção não reconhecida. Cancelando a exclusão.")
 
+    # ==========================================
+    # LEITURA OCR (TEXTO E NÚMEROS)
+    # ==========================================
+    def ler_texto_camera(self):
+        self.voz.falar("Modo leitura ativado. Posicione o texto na câmera e aperte S para eu ler, ou Q para cancelar.", aguardar=True)
+        texto_lido = self.leitor_texto.escanear_texto()
+        
+        if texto_lido:
+            self.voz.falar(f"Eu identifiquei o seguinte texto: {texto_lido}")
+        else:
+            self.voz.falar("Não consegui ler nenhum texto ou número da câmera, ou a operação foi cancelada.")
 
     # ==========================================
     # LISTA DE COMANDOS / AJUDA
@@ -238,13 +203,18 @@ class AssistenteBruxo:
             " 11. 'Bruxo, dólar' (cotação)\n"
             " 12. 'Bruxo, volume' (aumentar/diminuir/mutar)\n"
             " 13. 'Bruxo, portal' (faculdade)\n"
-            " 14. 'Bruxo, Alanzoka' (Easter Egg)\n"
-            " 15. 'Bruxo, <qualquer pergunta>' (Groq IA)\n"
-            " 16. 'Bruxo, tchau' (ou 'desligar')\n"
+            " 14. 'Bruxo, pausar/despausar' (controle de mídia)\n"
+            " 15. 'Bruxo, cadastrar rosto' (dataset facial)\n"
+            " 16. 'Bruxo, apagar rosto' (limpar dataset)\n"
+            " 17. 'Bruxo, quem sou eu' (reconhecimento facial)\n"
+            " 18. 'Bruxo, escanear texto' (leitura OCR)\n"
+            " 19. 'Bruxo, Alanzoka' / 'Pega no Breu' (Easter Eggs)\n"
+            " 20. 'Bruxo, <qualquer pergunta>' (Groq IA)\n"
+            " 21. 'Bruxo, tchau' (ou 'desligar')\n"
             f"{separador}\n"
         )
         print(menu)
-        texto_voz = "Meus novos comandos incluem clima, dólar, volume, abrir portal, google, youtube, agenda e inteligência artificial."
+        texto_voz = "Adicionei comandos de escaneamento de texto e reconhecimento facial à minha lista. Confira o terminal para mais detalhes."
         self.voz.falar(texto_voz)
 
     # ==========================================
@@ -258,44 +228,139 @@ class AssistenteBruxo:
             self.voz.falar("Fala comigo! O que o Bruxo pode fazer por você?")
             return None
 
+        # ESCANEAR TEXTO / NÚMEROS (OCR)
+        # Se contiver palavras de leitura, mas tiver 'agenda', ignora e deixa cair no bloco da agenda lá embaixo
+        if any(t in comando for t in ["escanear", "modo leitura", "extrair", "o que está escrito", "ler", "leia", "lê", "le "]):
+            if "agenda" not in comando and "evento" not in comando:
+                self.ler_texto_camera()
+                return None
+
         # LISTAR COMANDOS
         if any(t in comando for t in ["comando", "comandos", "ajuda", "menu"]):
             self.listar_comandos()
 
         # CLIMA
         elif any(t in comando for t in ["clima", "temperatura", "previsão", "previsao", "tempo"]):
-            self.obter_clima(fonte)
+            self.voz.falar("De qual cidade você quer saber a temperatura?", aguardar=True)
+            print("[AGUARDANDO NOME DA CIDADE...]")
+            cidade = self.microfone.escutar(fonte, timeout=5, phrase_time_limit=7)
+            if not cidade:
+                self.voz.falar("Não entendi a cidade. Busca de clima cancelada.")
+                return None
+            self.voz.falar(self.web.obter_clima(cidade))
 
         # COTAÇÃO DO DÓLAR
         elif any(t in comando for t in ["dólar", "dolar", "cotação"]):
-            self.obter_cotacao_dolar()
+            self.voz.falar(self.web.obter_cotacao_dolar())
 
         # VOLUME
         elif any(t in comando for t in ["volume", "mutar", "mudo", "som", "desmutar"]):
-            self.controlar_volume(comando)
+            if any(t in comando for t in ["aumentar", "aumente", "sobe", "subir", "mais alto"]):
+                self.sistema.aumentar_volume()
+                self.voz.falar("Aumentando o volume.")
+            elif any(t in comando for t in ["diminuir", "diminua", "abaixa", "abaixar", "mais baixo"]):
+                self.sistema.diminuir_volume()
+                self.voz.falar("Diminuindo o volume.")
+            elif any(t in comando for t in ["mutar", "mudo", "silenciar"]):
+                self.sistema.mutar_desmutar()
+                self.voz.falar("Volume mutado.")
+            elif any(t in comando for t in ["desmutar", "voltar som", "tirar mudo"]):
+                self.sistema.mutar_desmutar()
+                self.voz.falar("Som restaurado.")
+            else:
+                self.voz.falar("Não entendi se devo aumentar, diminuir ou mutar o volume.")
 
         # ABRIR PORTAL DA FACULDADE
         elif any(t in comando for t in ["portal", "faculdade", "fiap", "on fiap", "portal do aluno"]):
-            self.abrir_portal_fiap()
+            self.voz.falar("Abrindo o portal da faculdade FIAP.")
+            self.web.abrir_portal_fiap()
+
+        # SPOTIFY
+        elif any(t in comando for t in ["spotify", "ouvir", "tocar", "escutar", "música", "musica", "som"]) and not any(t in comando for t in ["parar", "pausar", "despausar", "paus"]):
+            # Garante que não confunda com comandos do youtube se a pessoa disser 'ouvir video'
+            if "youtube" not in comando and "vídeo" not in comando and "video" not in comando:
+                comando_limpo = comando.replace("quero", "").replace("gostaria de", "").strip()
+                artista = None
+                for palavra in ["ouvir ", "tocar ", "escutar ", "colocar ", "põe ", "poe ", "música ", "musica ", "som "]:
+                    if palavra in comando_limpo:
+                        partes = comando_limpo.split(palavra, 1)
+                        if len(partes) > 1:
+                            candidato = partes[1].strip()
+                            if candidato not in ["música", "musica", "som", "spotify", "uma música", "um som"]:
+                                artista = candidato
+                                break
+                
+                if not artista:
+                    self.voz.falar("O que você deseja ouvir no Spotify?", aguardar=True)
+                    print("[AGUARDANDO MÚSICA/ARTISTA...]")
+                    artista = self.microfone.escutar(fonte, timeout=5, phrase_time_limit=10)
+                    if not artista:
+                        self.voz.falar("Não consegui ouvir o que você quer tocar. Cancelado.")
+                        return None
+                        
+                msg = self.web.tocar_spotify(artista)
+                self.voz.falar(msg)
+                return None
+
+        # CONTROLE DE MÍDIA (PAUSAR/DESPAUSAR)
+        elif any(t in comando for t in ["pausa", "despausa", "play", "parar", "continuar", "paus"]):
+            self.sistema.pausar_despausar()
+            self.voz.falar("Feito.")
 
         # PESQUISAR NO GOOGLE
         elif any(t in comando for t in ["google", "pesquisar na internet"]):
-            self.buscar_google(fonte)
+            self.voz.falar("O que você deseja pesquisar no Google?", aguardar=True)
+            print("[AGUARDANDO TERMO DE Busca...]")
+            termo = self.microfone.escutar(fonte, timeout=7, phrase_time_limit=10)
+            if not termo:
+                self.voz.falar("Não escutei nada. Pesquisa cancelada.")
+                return None
+            
+            self.voz.falar("Verificando a segurança da sua pesquisa, um instante...")
+            msg = self.web.pesquisar_google(termo, self.ia)
+            self.voz.falar(msg)
 
         # LIMPAR FOTOS
-        elif any(t in comando for t in ["limpar fotos", "apagar fotos", "limpar prints"]):
+        elif any(t in comando for t in ["limpar fotos", "apagar fotos", "limpar prints", "apagar imagens", "limpar imagens", "apagar foto", "limpar imagem"]):
             self.limpar_fotos()
 
         # TIRAR PRINT
-        elif any(t in comando for t in ["print", "captura de tela", "tirar foto da tela"]):
+        elif any(t in comando for t in ["print", "captura de tela", "tirar foto da tela", "prin"]):
             self.tirar_print()
 
-        # CADASTRAR EVENTO
-        elif any(t in comando for t in ["cadastrar", "novo evento", "agendar"]):
-            self.cadastrar_evento(fonte)
+        # CADASTRAR / REGISTRAR (EVENTO OU FACIAL)
+        elif any(t in comando for t in ["cadastrar", "registrar", "gravar", "novo evento", "agendar", "reconhecimento facial"]):
+            if any(t in comando for t in ["rosto", "facial", "face", "pessoa", "reconhecimento"]):
+                self.cadastrar_facial(fonte)
+            elif any(t in comando for t in ["evento", "agenda", "compromisso", "novo evento", "agendar"]):
+                self.cadastrar_evento(fonte)
+            else:
+                self.voz.falar("Você deseja cadastrar um evento na agenda ou cadastrar um rosto?", aguardar=True)
+                print("[AGUARDANDO DESAMBIGUAÇÃO: EVENTO OU ROSTO...]")
+                resposta = self.microfone.escutar(fonte, timeout=5, phrase_time_limit=5)
+                
+                if not resposta:
+                    self.voz.falar("Não escutei. Operação de cadastro cancelada.")
+                    return None
+                    
+                resposta_limpa = resposta.lower()
+                if any(t in resposta_limpa for t in ["rosto", "facial", "face", "pessoa"]):
+                    self.cadastrar_facial(fonte)
+                elif any(t in resposta_limpa for t in ["evento", "agenda", "compromisso"]):
+                    self.cadastrar_evento(fonte)
+                else:
+                    self.voz.falar("Comando não reconhecido. Cancelando o cadastro.")
+
+        # APAGAR CADASTRO (FACIAL)
+        elif any(t in comando for t in ["apagar rosto", "apagar cadastro facial", "remover rosto", "deletar rosto", "excluir rosto", "apagar cadastro", "remover cadastro"]):
+            self.remover_cadastro_facial(fonte)
+
+        # QUEM SOU EU (RECONHECIMENTO FACIAL)
+        elif any(t in comando for t in ["quem sou eu", "me reconhece", "reconhecer meu rosto", "qual o meu nome", "qual é o meu nome"]):
+            self.identificar_usuario()
 
         # LER AGENDA
-        elif any(t in comando for t in ["ler agenda", "ver agenda"]):
+        elif any(t in comando for t in ["ler agenda", "ver agenda", "lê agenda", "le agenda", "ler a agenda"]) or ("agenda" in comando and any(t in comando for t in ["ler", "leia", "lê", "le ", "l"])):
             self.ler_agenda()
 
         # LIMPAR AGENDA
@@ -309,12 +374,25 @@ class AssistenteBruxo:
             self.voz.falar(self.obter_data())
 
         # EASTER EGG ALANZOKA
-        elif any(t in comando for t in ["alanzoka", "alan zoka"]):
+        elif any(t in comando for t in ["alanzoka", "alan zoka", "alanzo", "alan", "allan"]):
             self.voz.falar("Nextage, bebê!")
+
+        # EASTER EGG PEGA NO BREU
+        elif any(t in comando for t in ["pega no breu", "gaitaço", "gaitaco", "ronaldo", "agro pesca jacaré", "agro pesca jacare", "pega no bre"]):
+            self.voz.falar("Abrindo o clássico para você!")
+            webbrowser.open("https://www.youtube.com/watch?v=TFdO7oqkMzI")
 
         # YOUTUBE
         elif any(t in comando for t in ["youtube", "vídeo", "video", "assistir", "clipe"]):
-            self.buscar_video_youtube(fonte)
+            self.voz.falar("Qual vídeo você deseja ver?", aguardar=True)
+            print("[AGUARDANDO NOME DO VÍDEO...]")
+            video = self.microfone.escutar(fonte, timeout=7, phrase_time_limit=10)
+            if not video:
+                self.voz.falar("Não consegui ouvir o nome do vídeo. Busca cancelada.")
+                return None
+            
+            msg = self.web.tocar_youtube(video)
+            self.voz.falar(msg)
 
         # ENCERRAR
         elif any(t in comando for t in ["tchau", "desligar", "sair", "encerrar", "desliga"]):

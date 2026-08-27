@@ -1,12 +1,43 @@
-# Ambiente e chaves de API
+# =========================
+# Ambientes e Dependências
+# =========================
 .env
 .env.local
+venv/
+env/
+.venv/
+Scripts/
 
-# Python
+# =========================
+# Python & Cache
+# =========================
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.pytest_cache/
 
-# Arquivos de audio temporarios
+# =========================
+# Configurações de IDEs
+# =========================
+.vscode/
+.idea/
+*.swp
+
+# =========================
+# Temporários e Logs
+# =========================
 *.mp3
+*.log
 
-# Imagens capturadas (opcional)
+# =========================
+# Dados do Usuário (Projeto)
+# =========================
+agenda.txt
+
+# Ignorar os dados gerados, mas manter as pastas vazias no repositório
+rostos/*
+!rostos/.gitkeep
+
+img/*
+!img/.gitkeep
