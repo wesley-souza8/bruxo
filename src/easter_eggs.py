@@ -34,10 +34,7 @@ class GerenciadorEasterEggs:
             "e aí mano", "e ai mano", "e aí ué", "e ai ue", "e aí skipinho", "e ai skipinho"
         ]) or comando_limpo in ["iai", "e aí", "e ai", "eae", "e aí?", "e ai?"]:
             dialogo = (
-                "E aí Skipinho? E aí o que mano? E aí ué! "
-                "Não, e aí não! Como e aí não? Ué e aí o que? "
-                "E aí mano, e aí ué! Não tem e aí, e aí o que? "
-                "Ué eu tô falando e aí mano! Mas e aí o que cara? "
+                "E aí mano? "
                 "Não, e aí não! A gente sempre jogou junto quando crucificaram o Yetz. "
                 "Você não é criança e nem eu sou. Xiu é o caralho! "
                 "Uma vez você me desrespeitou e falou da minha família e agora eu tô falando contigo igual homem! "
