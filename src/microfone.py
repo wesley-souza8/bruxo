@@ -1,5 +1,5 @@
 import speech_recognition as sr
-from src.config import NOMES_GATILHO
+from src.config import NOMES_GATILHO, TIMEOUT_PADRAO_ESCUTA, LIMITE_FALA_PADRAO
 
 
 class OuvinteMicrofone:
@@ -12,12 +12,15 @@ class OuvinteMicrofone:
         self.reconhecedor = sr.Recognizer()
         self.reconhecedor.energy_threshold = 300
         self.reconhecedor.dynamic_energy_threshold = True
+        self.reconhecedor.pause_threshold = 1.0
 
     def calibrar(self, fonte, duracao: int = 1):
         """Ajusta os níveis de sensibilidade para o ruído ambiente."""
         self.reconhecedor.adjust_for_ambient_noise(fonte, duration=duracao)
+        if self.reconhecedor.energy_threshold < 300:
+            self.reconhecedor.energy_threshold = 300
 
-    def escutar(self, fonte, timeout: int = 5, phrase_time_limit: int = 7) -> str:
+    def escutar(self, fonte, timeout: int = TIMEOUT_PADRAO_ESCUTA, phrase_time_limit: int = LIMITE_FALA_PADRAO) -> str:
         """
         Escuta o microfone e transcreve a fala em texto (pt-BR).
         Retorna string vazia caso não haja fala ou ruído inaudível.

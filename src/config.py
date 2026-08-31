@@ -24,3 +24,10 @@ MODELO_GROQ_PRINCIPAL = "openai/gpt-oss-120b"
 MODELO_GROQ_FALLBACK = "qwen/qwen3.6-27b"
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 AWESOME_API_KEY = os.getenv("AWESOME_API_KEY")
+
+# Configurações de Captação e Microfone (Timeouts em segundos)
+TIMEOUT_PADRAO_ESCUTA = 5        # Timeout do loop contínuo de escuta (wake word)
+TIMEOUT_RESPOSTA = 10            # Delay/tempo limite para o usuário responder a uma pergunta
+LIMITE_FALA_PADRAO = 7           # Duração máxima de fala em escuta contínua
+LIMITE_FALA_CURTA = 7            # Duração máxima para respostas curtas (ex: nomes, cidades, opções)
+LIMITE_FALA_LONGA = 12           # Duração máxima para descrições longas (ex: eventos, buscas)

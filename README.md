@@ -1,4 +1,4 @@
-# 🧙‍♂️ Assistente Virtual Bruxo
+﻿# 🧙‍♂️ Assistente Virtual Bruxo
 
 [![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -18,19 +18,19 @@
 > **Matéria:** Project-Based Maker Lab  
 > **Professor:** Hellynson Cassio Lana  
 >   
-> Aplicação orientada a objetos para reconhecimento de comandos de voz, síntese neural, gerenciamento de agenda, captura de tela, controle de sistema, inteligência artificial generativa e visão computacional (biometria e OCR).
+> Aplicação orientada a objetos para reconhecimento de comandos de voz, síntese neural, gerenciamento de agenda, captura de tela, controle de sistema, inteligência artificial generativa e visão computacional (biometria facial e OCR).
 
 ---
 
 ## 📌 Sobre o Projeto
 
-Inspirado na assistente **F.R.I.D.A.Y. (Sexta-Feira)** do Homem de Ferro, o **Bruxo** é um assistente virtual inteligente capaz de escutar o usuário continuamente em segundo plano, filtrando comandos através de uma **palavra de ativação (*Wake Word*)** e respondendo por voz masculina grave neural de forma assíncrona. O projeto implementa desde integrações com APIs Web até reconhecimento facial avançado usando IA.
+Inspirado na assistente **F.R.I.D.A.Y. (Sexta-Feira)** do Homem de Ferro, o **Bruxo** é um assistente virtual inteligente capaz de escutar o usuário continuamente em segundo plano, filtrando comandos através de uma **palavra de ativação (*Wake Word*)** e respondendo por voz masculina grave neural de forma assíncrona. O projeto combina inteligência artificial generativa, automação de sistema operacional, serviços web e visão computacional em tempo real.
 
 ---
 
 ## 🏗️ Arquitetura Orientada a Objetos (POO)
 
-O projeto foi estruturado seguindo os princípios de modularidade, separação de responsabilidades (SOLID) e Orientação a Objetos:
+O projeto foi estruturado seguindo os princípios de modularidade, separação de responsabilidades (SOLID) e o padrão de projeto **Dispatcher Pattern**:
 
 ```text
 bruxo/
@@ -47,16 +47,17 @@ bruxo/
 │
 └── src/                       # Código-fonte modular do assistente
     ├── __init__.py            
-    ├── config.py              # Configurações globais, caminhos e constantes
-    ├── voz.py                 # SintetizadorVoz (Edge-TTS Neural + Pygame em RAM sem bloqueio)
-    ├── microfone.py           # OuvinteMicrofone (SpeechRecognition + Wake Word)
-    ├── agenda.py              # GerenciadorAgenda (CRUD persistente de eventos)
-    ├── captura.py             # GerenciadorCaptura (Screenshot e Limpeza)
-    ├── ia_groq.py             # ClienteIA (Integração com Groq Cloud LPU / Filtro de Conteúdo)
-    ├── servicos.py            # ServicosWeb e ControleSistema (Integração Spotify, Navegador, APIs)
-    ├── reconhecimento.py      # GerenciadorFacial (OpenCV, Captura Dinâmica, Treino LBPH)
-    ├── leitura.py             # LeitorTexto (Escaneamento de texto com EasyOCR)
-    └── assistente.py          # AssistenteBruxo (Classe Orquestradora principal)
+    ├── config.py              # Constantes globais, caminhos, timeouts e configurações
+    ├── voz.py                 # SintetizadorVoz (Edge-TTS Neural + Velocidade Dinâmica + Pygame em RAM)
+    ├── microfone.py           # OuvinteMicrofone (SpeechRecognition + Calibração + Wake Word)
+    ├── agenda.py              # GerenciadorAgenda (CRUD resiliente e autônomo de compromissos)
+    ├── captura.py             # GerenciadorCaptura (Screenshots com timestamp e Limpeza)
+    ├── ia_groq.py             # ClienteIA (Groq Cloud LPU API / LLaMA 3 com fallback)
+    ├── servicos.py            # ServicosWeb e ControleSistema (Spotify, Navegador, APIs, Volume)
+    ├── reconhecimento.py      # GerenciadorFacial (OpenCV, Equalização, Downscale 0.5x, LBPH)
+    ├── leitura.py             # LeitorTexto (Escaneamento OCR de texto com EasyOCR)
+    ├── easter_eggs.py         # GerenciadorEasterEggs (Piadas, memes e diálogos clássicos)
+    └── assistente.py          # AssistenteBruxo (Classe Orquestradora e Dispatcher Central)
 ```
 
 ---
@@ -69,24 +70,41 @@ O assistente só responde quando acionado pela palavra de ativação: **"Bruxo"*
 |---|---|---|
 | 1 | **"Bruxo, que horas são?"** | Informa as horas e minutos atuais por voz. |
 | 2 | **"Bruxo, que dia é hoje?"** | Informa o dia, mês e ano atuais por voz. |
-| 3 | **"Bruxo, cadastrar na agenda"** | Pergunta o evento, transcreve a resposta e salva em `agenda.txt`. Diferencia do cadastro facial inteligentemente. |
-| 4 | **"Bruxo, ler agenda"** | Lê todos os eventos salvos no arquivo `agenda.txt`. |
-| 5 | **"Bruxo, limpar agenda"** | Esvazia o conteúdo do arquivo `agenda.txt` sem deletá-lo. |
-| 6 | **"Bruxo, tirar um print da tela"** | Captura a tela e salva automaticamente com timestamp na pasta `img/`. |
-| 7 | **"Bruxo, limpar fotos"** | Apaga todas as imagens e fotos salvas na pasta `img/`. |
-| 8 | **"Bruxo, previsão do tempo"** | Pergunta a cidade desejada e consulta a API da OpenWeather. |
-| 9 | **"Bruxo, cotação do dólar"** | Consulta a AwesomeAPI e informa o valor atual do dólar. |
-| 10 | **"Bruxo, aumentar/mutar volume"**| Controla o volume geral e play/pause de mídia do Windows simulando teclas. |
-| 11 | **"Bruxo, pesquisar no google"** | Faz busca no navegador **após** a IA Groq validar se o termo é seguro/SFW. |
-| 12 | **"Bruxo, pesquisar vídeo"** | Pergunta o nome e pesquisa vídeos diretamente no YouTube. |
-| 13 | **"Bruxo, tocar no Spotify"** | Abre o Spotify Desktop via URI, pesquisa a música/artista e dá o play. |
-| 14 | **"Bruxo, abrir portal da faculdade"**| Abre diretamente o site da FIAP no navegador. |
-| 15 | **"Bruxo, cadastrar rosto"** | Liga a webcam, coleta 30 amostras do rosto do usuário e gera o dataset em `rostos/`. |
-| 16 | **"Bruxo, quem sou eu?"** | Treina o modelo sob demanda e usa o HaarCascade + LBPH para dizer o seu nome. |
-| 17 | **"Bruxo, apagar rosto"** | Remove o dataset biométrico de pessoas específicas ou apaga o sistema todo. |
-| 18 | **"Bruxo, escanear texto"** | Abre a câmera, capta texto ou números da imagem e fala usando IA (EasyOCR). |
-| 19 | **"Bruxo, [qualquer dúvida]"** | Consulta a IA Generativa (Llama-3) e responde por voz em < 1s, atuando como LLAma/ChatGPT. |
-| 20 | **"Bruxo, tchau"** (ou *"desliga"*) | Responde *"Bruxo saindo... KABUUUM!"* e encerra a aplicação de forma segura. |
+| 3 | **"Bruxo, quem é você?"** / **"se apresente"** | Apresenta detalhadamente a identidade e todas as funcionalidades do assistente. |
+| 4 | **"Bruxo, cadastrar na agenda"** | Pergunta o evento, transcreve e salva em `agenda.txt`. Diferencia inteligentemente da biometria facial. |
+| 5 | **"Bruxo, ler agenda"** | Lê todos os compromissos salvos em `agenda.txt`. |
+| 6 | **"Bruxo, limpar agenda"** | Esvazia o conteúdo do arquivo `agenda.txt` com prioridade máxima. |
+| 7 | **"Bruxo, tirar um print da tela"** | Captura a tela inteira e salva com carimbo de data/hora na pasta `img/`. |
+| 8 | **"Bruxo, limpar fotos"** | Apaga todas as imagens e prints salvos na pasta `img/`. |
+| 9 | **"Bruxo, previsão do tempo"** | Pergunta a cidade desejada e consulta a temperatura e condições na OpenWeather API. |
+| 10 | **"Bruxo, cotação do dólar"** | Consulta a AwesomeAPI e informa o valor atual da moeda em reais. |
+| 11 | **"Bruxo, aumentar/diminuir volume"** | Ajusta o volume do Windows em passos graduais. |
+| 12 | **"Bruxo, mutar / desmutar"** | Alterna entre silenciar o áudio e restaurar o som com fala correspondente. |
+| 13 | **"Bruxo, pausar / despausar"** | Controla o play/pause de reprodutores de mídia e vídeos do sistema operacional. |
+| 14 | **"Bruxo, pesquisar no Google"** | Realiza buscas no navegador **após** a IA Groq validar a segurança/SFW do termo. |
+| 15 | **"Bruxo, pesquisar vídeo"** | Pergunta o nome e pesquisa vídeos diretamente no YouTube. |
+| 16 | **"Bruxo, tocar no Spotify"** | Abre o Spotify Desktop via URI, pesquisa a música/artista e dá o play automático. |
+| 17 | **"Bruxo, abrir portal da faculdade"** | Abre diretamente a plataforma de estudos da FIAP no navegador. |
+| 18 | **"Bruxo, cadastrar rosto"** | Abre a webcam, coleta 15 amostras normalizadas com barra de progresso em tempo real e treina o LBPH. |
+| 19 | **"Bruxo, quem sou eu?"** | Analisa a câmera com equalização de iluminação e identifica o usuário cadastrado pelo nome. |
+| 20 | **"Bruxo, apagar rosto"** / **"apagar rosto do [Nome]"** | Exclui cadastros faciais específicos pelo nome falado ou esvazia todo o banco de biometria. |
+| 21 | **"Bruxo, escanear texto"** | Liga a câmera, capta texto ou números de papéis/documentos físicos e lê com OCR (EasyOCR). |
+| 22 | **"Bruxo, Alanzoka"** | *Easter Egg:* Responde com o clássico *"Nextage, bebê!"*. |
+| 23 | **"Bruxo, pega no breu"** | *Easter Egg:* Abre instantaneamente o vídeo clássico no YouTube em silêncio. |
+| 24 | **"Bruxo, Skipinho"** / **"Axt"** / **"Yetz"** | *Easter Egg:* Narra a famosa discussão gamer dos anos de ouro em velocidade acelerada (+25%). |
+| 25 | **"Bruxo, [qualquer pergunta]"** | Envia a dúvida para a IA Generativa (Llama 3 via Groq) e responde em voz alta em menos de 1 segundo. |
+| 26 | **"Bruxo, tchau"** (ou *"desligar"*) | Responde *"Bruxo saindo... KABUUUM!"* e encerra a aplicação com segurança. |
+
+---
+
+## 💡 Destaques de Engenharia e Robustez
+
+* **Despachante Modular (*Dispatcher Pattern*):** Separação de fluxos de execução em métodos especializados, isolando a regra de negócio da manipulação direta de hardware.
+* **Escuta Persistente e Sem Interferência de Alto-Falante:** O assistente conclui sua fala antes de abrir uma janela de escuta limpa de 10 segundos, eliminando cancelamentos falsos em notebooks.
+* **Visão Computacional Otimizada (70% menos CPU):** A detecção facial opera em escala reduzida (*0.5x*), permitindo taxa de quadros fluida (~30 FPS) mesmo em notebooks com processadores modestos.
+* **Equalização de Histograma (`equalizeHist`):** Neutraliza sombras laterais, luz forte de janelas e reflexos de óculos tanto no cadastro quanto no reconhecimento biométrico.
+* **Compatibilidade Completa com Windows (Caminhos UTF-8):** Gravação e leitura de imagens e classificadores XML imunes a erros de caminhos com caracteres acentuados (como *"Área de Trabalho"*).
+* **Velocidade de Voz Dinâmica:** Síntese Microsoft Neural com suporte a taxas de aceleração pontuais para respostas expressivas e Easter Eggs.
 
 ---
 
@@ -95,9 +113,9 @@ O assistente só responde quando acionado pela palavra de ativação: **"Bruxo"*
 * **Linguagem:** Python 3.10+
 * **Visão Computacional e OCR:** `opencv-contrib-python`, `numpy`, `easyocr`
 * **Reconhecimento de Fala (STT):** `SpeechRecognition` + `PyAudio`
-* **Síntese de Voz (TTS):** `edge-tts` (Microsoft Neural Voice `pt-BR-AntonioNeural` ajustado) + `gTTS` (fallback)
+* **Síntese de Voz (TTS):** `edge-tts` (Microsoft Neural Voice `pt-BR-AntonioNeural` customizado) + `gTTS` (fallback)
 * **Inteligência Artificial Generativa:** `groq` (Groq Cloud LPU API - Llama 3)
-* **Reprodução de Áudio:** `pygame` (execução 100% em memória RAM via `io.BytesIO`)
+* **Reprodução de Áudio:** `pygame` (execução 100% em memória RAM via `io.BytesIO` sem travas de disco)
 * **Captura de Tela e Controle de Sistema:** `pyautogui` + `Pillow`
 * **Requisições e Automação Web:** `requests`, `pywhatkit`, `webbrowser`
 * **Gerenciamento de Ambiente:** `python-dotenv`
@@ -112,7 +130,7 @@ git clone https://github.com/wesley-souza8/bruxo.git
 cd bruxo
 ```
 
-### 2. Criar e ativar um ambiente virtual (Recomendado)
+### 2. Criar e ativar o ambiente virtual (Recomendado)
 ```bash
 python -m venv venv
 
@@ -130,7 +148,7 @@ pip install -r requirements.txt
 > **Nota de compatibilidade:** Assegure-se de usar a biblioteca `opencv-contrib-python`. Instalar apenas as versões básicas ou 'headless' do OpenCV impossibilitará o uso do módulo `cv2.face` (reconhecimento facial) e a abertura das janelas da webcam no sistema operacional.
 
 ### 4. Configurar as Chaves de API
-Crie um arquivo `.env` na raiz do projeto e adicione suas chaves (use as APIs em sua cota gratuita):
+Crie um arquivo `.env` na raiz do projeto e adicione suas credenciais:
 ```env
 GROQ_API_KEY=sua_chave_groq_aqui
 OPENWEATHER_API_KEY=sua_chave_openweathermap_aqui
@@ -147,5 +165,5 @@ python main.py
 ```
 
 1. Aguarde a calibração do ruído ambiente do microfone (cerca de 1 segundo).
-2. Diga: *"Bruxo, listar comandos"* ou faça qualquer solicitação da tabela acima!
+2. Diga: *"Bruxo, se apresente"* ou faça qualquer solicitação listada na tabela de comandos!
 3. Para encerrar o programa, diga: *"Bruxo, tchau"* ou pressione `Ctrl + C` no terminal.
